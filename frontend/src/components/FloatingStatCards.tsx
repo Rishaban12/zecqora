@@ -16,7 +16,7 @@ const CARDS: FloatingCard[] = [
     small: 'built around you',
     className: 'bg-yellow-100',
     style: { top: '18%', left: '26%', rotate: -6 },
-    duration: 7,
+    duration: 3.2,
     delay: 0,
   },
   {
@@ -24,32 +24,32 @@ const CARDS: FloatingCard[] = [
     small: 'with intelligent engineering',
     className: 'bg-cyan-100',
     style: { top: '14%', right: '24%', rotate: 4 },
-    duration: 8,
-    delay: 1.2,
+    duration: 3.6,
+    delay: 0.5,
   },
   {
     big: 'Scalable',
     small: 'technology by design',
     className: 'bg-pink-100',
     style: { bottom: '26%', left: '20%', rotate: -4 },
-    duration: 9,
-    delay: 2.4,
+    duration: 4,
+    delay: 1,
   },
   {
     big: 'Any Business',
     small: 'any technology need',
     className: 'bg-emerald-100',
     style: { bottom: '28%', right: '22%', rotate: 5 },
-    duration: 7.5,
-    delay: 0.8,
+    duration: 3.4,
+    delay: 1.6,
   },
   {
     big: 'AI + Software',
     small: 'engineered together',
     className: 'bg-violet-100',
     style: { bottom: '10%', left: '42%', rotate: -2 },
-    duration: 8.5,
-    delay: 3.2,
+    duration: 3.8,
+    delay: 2.1,
   },
 ]
 
@@ -68,8 +68,8 @@ export default function FloatingStatCards() {
             rotate: card.style.rotate,
           }}
           animate={{
-            filter: ['blur(7px)', 'blur(0px)', 'blur(0px)', 'blur(7px)'],
-            opacity: [0.45, 1, 1, 0.45],
+            filter: ['blur(4px)', 'blur(0px)', 'blur(0px)', 'blur(4px)'],
+            opacity: [0.6, 1, 1, 0.6],
           }}
           transition={{
             duration: card.duration,
