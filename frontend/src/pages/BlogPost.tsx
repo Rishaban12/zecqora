@@ -1,13 +1,132 @@
 import { Clock } from 'lucide-react'
+import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import CTASection from '../components/CTASection'
 import Reveal from '../components/Reveal'
-import { BLOG_POSTS } from '../lib/data'
+import { BLOG_POSTS, type BlogBlock } from '../lib/data'
+
+function Block({ block }: { block: BlogBlock }) {
+  switch (block.type) {
+    case 'lead':
+      return (
+        <p className="rounded-2xl border border-line bg-white px-5 py-4 text-base leading-8 font-medium text-ink">
+          {block.text}
+        </p>
+      )
+    case 'p':
+      return <p className="text-base leading-8 text-ink-soft">{block.text}</p>
+    case 'h2':
+      return (
+        <h2 className="font-display mt-4 text-2xl font-semibold tracking-[-0.03em] text-ink sm:text-[1.7rem]">
+          {block.text}
+        </h2>
+      )
+    case 'h3':
+      return (
+        <h3 className="font-display mt-2 text-lg font-semibold tracking-[-0.02em] text-ink">
+          {block.text}
+        </h3>
+      )
+    case 'ul':
+      return (
+        <ul className="flex list-disc flex-col gap-2 pl-5 text-base leading-7 text-ink-soft">
+          {block.items.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      )
+    case 'takeaways':
+      return (
+        <aside className="rounded-2xl border border-ink/10 bg-ink/[0.03] px-5 py-5">
+          <p className="text-[11px] font-semibold tracking-[0.14em] text-ink uppercase">Key takeaways</p>
+          <ul className="mt-3 flex list-disc flex-col gap-2 pl-5 text-base leading-7 text-ink-soft">
+            {block.items.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </aside>
+      )
+    case 'faq':
+      return (
+        <div className="mt-2 flex flex-col gap-4">
+          <h2 className="font-display text-2xl font-semibold tracking-[-0.03em] text-ink">
+            Frequently asked questions
+          </h2>
+          <div className="flex flex-col gap-3">
+            {block.items.map((item) => (
+              <details
+                key={item.q}
+                className="group rounded-2xl border border-line bg-white px-5 py-4 open:shadow-[0_12px_30px_-24px_rgba(16,42,36,0.35)]"
+              >
+                <summary className="cursor-pointer list-none text-base font-semibold text-ink [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                </summary>
+                <p className="mt-3 text-base leading-7 text-ink-soft">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      )
+  }
+}
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>()
   const post = BLOG_POSTS.find((candidate) => candidate.slug === slug)
   const related = BLOG_POSTS.filter((candidate) => candidate.slug !== slug).slice(0, 3)
+
+  useEffect(() => {
+    if (!post) return
+    const previous = document.title
+    document.title = `${post.title} | Zecqora`
+    let meta = document.querySelector('meta[name="description"]')
+    if (!meta) {
+      meta = document.createElement('meta')
+      meta.setAttribute('name', 'description')
+      document.head.appendChild(meta)
+    }
+    meta.setAttribute('content', post.metaDescription)
+
+    const faqBlock = post.content.find((block) => block.type === 'faq')
+    const script = document.createElement('script')
+    script.type = 'application/ld+json'
+    script.dataset.blogJsonLd = 'true'
+    const articleLd = {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: post.title,
+      description: post.metaDescription,
+      image: post.image,
+      datePublished: post.date,
+      author: { '@type': 'Organization', name: post.author },
+      publisher: { '@type': 'Organization', name: 'Zecqora' },
+    }
+    const graph =
+      faqBlock && faqBlock.type === 'faq'
+        ? {
+            '@context': 'https://schema.org',
+            '@graph': [
+              articleLd,
+              {
+                '@type': 'FAQPage',
+                mainEntity: faqBlock.items.map((item) => ({
+                  '@type': 'Question',
+                  name: item.q,
+                  acceptedAnswer: { '@type': 'Answer', text: item.a },
+                })),
+              },
+            ],
+          }
+        : articleLd
+    script.textContent = JSON.stringify(graph)
+    document.querySelectorAll('script[data-blog-json-ld="true"]').forEach((node) => node.remove())
+    document.head.appendChild(script)
+
+    return () => {
+      document.title = previous
+      script.remove()
+    }
+  }, [post])
 
   if (!post) {
     return (
@@ -37,9 +156,13 @@ export default function BlogPost() {
                 Blog
               </Link>
             </p>
-            <h1 className="font-display mt-6 max-w-xl text-4xl leading-[1.08] font-semibold tracking-[-0.045em] text-ink sm:text-5xl lg:text-[3.4rem]">
+            <p className="mt-5 text-[11px] font-semibold tracking-[0.14em] text-ink/70 uppercase">
+              {post.category}
+            </p>
+            <h1 className="font-display mt-3 max-w-xl text-4xl leading-[1.08] font-semibold tracking-[-0.045em] text-ink sm:text-5xl lg:text-[3.4rem]">
               {post.title}
             </h1>
+            <p className="mt-5 max-w-xl text-base leading-7 text-ink/80">{post.excerpt}</p>
             <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-ink/75">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-[11px] font-semibold text-yellow">
                 {post.author
@@ -65,12 +188,10 @@ export default function BlogPost() {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-bg [clip-path:ellipse(80%_100%_at_50%_100%)]" />
       </section>
 
-      <section className="mx-auto max-w-2xl px-6 py-16">
+      <article className="mx-auto max-w-2xl px-6 py-16">
         <Reveal className="flex flex-col gap-6">
-          {post.content.map((paragraph, i) => (
-            <p key={i} className="text-base leading-8 text-ink-soft">
-              {paragraph}
-            </p>
+          {post.content.map((block, i) => (
+            <Block key={`${block.type}-${i}`} block={block} />
           ))}
         </Reveal>
         <Link
@@ -79,7 +200,7 @@ export default function BlogPost() {
         >
           ← Back to Blog
         </Link>
-      </section>
+      </article>
 
       {related.length > 0 && (
         <section className="mx-auto max-w-6xl px-6 pb-20">

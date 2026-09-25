@@ -1,31 +1,27 @@
 import { useReducedMotion } from 'framer-motion'
 import { useEffect, useRef } from 'react'
 
-type Particle = { t: number; a: number; r: number; s: number }
+const INK = [16, 42, 36] as const
+const MID = [90, 130, 72] as const
+const YELLOW = [254, 210, 79] as const
 
-function knot(t: number) {
-  const p = 3
-  const q = 2
-  const phi = t * Math.PI * 2
-  const rad = 0.72 * Math.cos(q * phi) + 1.55
-  return {
-    x: rad * Math.cos(p * phi),
-    y: rad * Math.sin(p * phi) * 0.78,
-    z: -0.9 * Math.sin(q * phi),
-  }
+function mix(a: readonly number[], b: readonly number[], t: number) {
+  const k = t < 0 ? 0 : t > 1 ? 1 : t
+  return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k]
 }
 
-function sub(a: { x: number; y: number; z: number }, b: { x: number; y: number; z: number }) {
-  return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z }
+function colorAt(t: number) {
+  if (t < 0.45) return mix(INK, MID, t / 0.45)
+  return mix(MID, YELLOW, (t - 0.45) / 0.55)
 }
 
-function cross(a: { x: number; y: number; z: number }, b: { x: number; y: number; z: number }) {
-  return { x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x }
-}
-
-function norm(v: { x: number; y: number; z: number }) {
-  const l = Math.hypot(v.x, v.y, v.z) || 1
-  return { x: v.x / l, y: v.y / l, z: v.z / l }
+/** Horizontal ribbon wave — two overlapping streams of parallel curves. */
+function waveY(xNorm: number, lane: number, phase: number) {
+  const x = xNorm * Math.PI * 2
+  const primary = Math.sin(x + phase) * 0.42
+  const secondary = Math.sin(x * 0.5 + phase * 0.7 + 1.2) * 0.18
+  const laneOffset = lane * 0.028
+  return primary + secondary + laneOffset
 }
 
 export default function HeroFlowField() {
@@ -43,7 +39,6 @@ export default function HeroFlowField() {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     let width = 0
     let height = 0
-    let particles: Particle[] = []
     let time = 0
     let frame = 0
     let visible = true
@@ -57,61 +52,46 @@ export default function HeroFlowField() {
       canvas.style.width = `${width}px`
       canvas.style.height = `${height}px`
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      const count = width < 800 ? 1400 : 2600
-      particles = Array.from({ length: count }, () => ({
-        t: Math.random(),
-        a: Math.random() * Math.PI * 2,
-        r: 0.08 + Math.random() * 0.16,
-        s: 0.9 + Math.random() * 1.4,
-      }))
     }
 
     const paint = (animate: boolean) => {
       ctx.clearRect(0, 0, width, height)
-      const cx = width * (width < 800 ? 0.5 : 0.7)
+      const mobile = width < 800
+      const left = width * (mobile ? 0.04 : 0.38)
+      const right = width * (mobile ? 0.96 : 0.98)
+      const span = right - left
       const cy = height * 0.5
-      const scale = Math.min(width, height) * (width < 800 ? 0.28 : 0.32)
-      const rotY = 0.4 + time * 0.11
-      const rotX = 0.72
-      const cosY = Math.cos(rotY)
-      const sinY = Math.sin(rotY)
-      const cosX = Math.cos(rotX)
-      const sinX = Math.sin(rotX)
-      const flow = animate ? time * 0.028 : 0
+      const amp = Math.min(height * 0.28, 160)
+      const phase = animate ? time * 0.55 : 0
+      const lanes = mobile ? 22 : 34
+      const segments = mobile ? 48 : 72
 
-      for (const p of particles) {
-        const t = (p.t + flow) % 1
-        const pos = knot(t)
-        const tan = norm(sub(knot((t + 0.004) % 1), pos))
-        const bin = norm(cross(tan, { x: 0.12, y: 0.96, z: 0.25 }))
-        const nor = cross(bin, tan)
-        const tube = p.r * (1 + 0.08 * Math.sin(t * 12 + time))
-        let x = pos.x + (nor.x * Math.cos(p.a) + bin.x * Math.sin(p.a)) * tube
-        let y = pos.y + (nor.y * Math.cos(p.a) + bin.y * Math.sin(p.a)) * tube
-        let z = pos.z + (nor.z * Math.cos(p.a) + bin.z * Math.sin(p.a)) * tube
+      for (let stream = 0; stream < 2; stream++) {
+        const streamPhase = phase + stream * 0.9
+        const streamShift = stream === 0 ? -0.08 : 0.1
 
-        const xz = x * cosY - z * sinY
-        z = x * sinY + z * cosY
-        x = xz
-        const yz = y * cosX - z * sinX
-        z = y * sinX + z * cosX
-        y = yz
+        for (let lane = 0; lane < lanes; lane++) {
+          const laneNorm = lane / (lanes - 1)
+          const laneOffset = (laneNorm - 0.5) * 2.4 + streamShift * 8
 
-        const depth = 5 / (5 + z)
-        const px = cx + x * scale * depth
-        const py = cy + y * scale * depth
-        if (px < -6 || px > width + 6 || py < -6 || py > height + 6) continue
+          ctx.beginPath()
+          for (let i = 0; i <= segments; i++) {
+            const t = i / segments
+            const x = left + t * span
+            const y = cy + (waveY(t, laneOffset, streamPhase) + streamShift) * amp
+            if (i === 0) ctx.moveTo(x, y)
+            else ctx.lineTo(x, y)
+          }
 
-        const near = (z + 1.6) / 3.2
-        const yellow = near > 0.45
-        const alpha = (0.35 + depth * 0.5) * (width < 800 ? 0.75 : 1)
-        ctx.fillStyle = yellow
-          ? `rgba(254,210,79,${alpha})`
-          : `rgba(16,42,36,${alpha * 0.85})`
-        const size = p.s * (0.55 + depth * 0.85)
-        ctx.beginPath()
-        ctx.arc(px, py, size, 0, Math.PI * 2)
-        ctx.fill()
+          const edgeFade = 1 - Math.abs(laneNorm - 0.5) * 1.4
+          const alpha = Math.max(0.08, 0.22 * edgeFade) * (mobile ? 0.7 : 1)
+          const [r, g, b] = colorAt(0.15 + laneNorm * 0.7 + stream * 0.12)
+          ctx.strokeStyle = `rgba(${r | 0},${g | 0},${b | 0},${alpha})`
+          ctx.lineWidth = mobile ? 1.1 : 1.35
+          ctx.lineCap = 'round'
+          ctx.lineJoin = 'round'
+          ctx.stroke()
+        }
       }
     }
 
