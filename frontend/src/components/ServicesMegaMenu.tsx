@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, Flame } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { SERVICES_MENU, slugifyService } from '../lib/data'
+import { SERVICE_STUDIOS } from '../lib/service-studios'
 
 const GENERIC_TARGETS = ['/services', '/services#business']
 
@@ -90,6 +91,18 @@ export default function ServicesMegaMenu({ onDark = false }: { onDark?: boolean 
             </div>
 
             <div className="flex-1 p-3">
+              {SERVICE_STUDIOS.find((studio) => studio.label === SERVICES_MENU[activeIndex].label) && (
+                <Link
+                  to={`/services/${SERVICE_STUDIOS.find((studio) => studio.label === SERVICES_MENU[activeIndex].label)!.slug}`}
+                  onClick={() => setOpen(false)}
+                  className={`mb-1 flex items-center justify-between rounded-[10px] px-3 py-2.5 text-sm font-semibold ${
+                    onDark ? 'text-yellow hover:bg-white/5' : 'text-ink hover:bg-ink/5'
+                  }`}
+                >
+                  View {SERVICES_MENU[activeIndex].label}
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              )}
               {SERVICES_MENU[activeIndex].items.map((item) => (
                 <Link
                   key={item.label}

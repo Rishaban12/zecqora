@@ -153,7 +153,8 @@ body::after {
 }
 
 .page-hero-accent {
-  color: var(--color-yellow);
+  color: var(--color-ink);
+  background-image: linear-gradient(transparent 64%, var(--color-yellow) 64%);
 }
 
 ::selection {

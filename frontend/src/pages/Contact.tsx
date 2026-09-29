@@ -78,10 +78,14 @@ export default function Contact() {
 
   return (
     <section className="px-6 pt-32 pb-24">
-      <div className="mx-auto max-w-6xl rounded-[2rem] border border-line p-6 sm:p-10 lg:p-14">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+      <div className="mx-auto max-w-6xl">
+        <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
           <div className="flex max-w-xl flex-col text-left">
-            <h1 className="hero-title text-4xl text-ink sm:text-5xl lg:text-[3.4rem]">
+            <p className="flex items-center gap-2.5 text-[11px] font-semibold tracking-[0.16em] text-ink uppercase">
+              <span className="h-1.5 w-1.5 rounded-full bg-yellow" />
+              Contact
+            </p>
+            <h1 className="font-display mt-5 text-4xl font-semibold tracking-[-0.045em] text-ink sm:text-5xl lg:text-[3.4rem]">
               A clearer way to start what you’re building.
             </h1>
 
@@ -105,7 +109,7 @@ export default function Contact() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-line bg-surface/80 p-5 sm:p-6">
+          <div className="rounded-2xl border border-line bg-white p-5 shadow-[0_24px_60px_-36px_rgba(16,42,36,0.35)] sm:p-7">
             <h2 className="font-display text-lg font-semibold text-ink">Book a live, 15-minute conversation</h2>
 
             <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">

@@ -12,13 +12,13 @@ const PATHS = [
     title: 'Custom Projects',
     description:
       'Built from scratch around your own idea, problem statement and college requirements — a project that is genuinely yours.',
-    className: 'bg-violet-100',
+    className: 'bg-white',
   },
   {
     title: 'Pre-Built Projects',
     description:
       'Start from a working project in your domain and customize it — faster to get moving, still yours to explain and defend.',
-    className: 'bg-blue-100',
+    className: 'bg-yellow/30',
   },
 ]
 

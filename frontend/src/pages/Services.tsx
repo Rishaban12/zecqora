@@ -1,9 +1,10 @@
-import { Check, Sparkles } from 'lucide-react'
+import { ArrowUpRight, Check, Sparkles } from 'lucide-react'
 import { Boxes, Globe2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import CTASection from '../components/CTASection'
 import PageHero from '../components/PageHero'
 import Reveal from '../components/Reveal'
+import { SERVICE_STUDIOS } from '../lib/service-studios'
 
 const BUSINESS_TIERS = [
   {
@@ -71,6 +72,26 @@ export default function Services() {
         <span className="page-hero-accent">building</span>.
       </PageHero>
 
+      <section className="border-y border-line bg-white">
+        <div className="mx-auto grid max-w-6xl md:grid-cols-3">
+          {SERVICE_STUDIOS.map((studio, i) => (
+            <Link
+              key={studio.slug}
+              to={`/services/${studio.slug}`}
+              className={`group flex flex-col px-6 py-10 sm:px-8 ${i > 0 ? 'border-t border-line md:border-t-0 md:border-l' : ''}`}
+            >
+              <p className="text-[11px] font-semibold tracking-[0.18em] text-ink-faint uppercase">{studio.kicker}</p>
+              <h2 className="font-display mt-4 text-2xl font-semibold tracking-[-0.04em] text-ink">{studio.label}</h2>
+              <p className="mt-3 flex-1 text-sm leading-6 text-ink-soft">{studio.lead}</p>
+              <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-ink">
+                Explore
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* Business websites */}
       <section id="business" className="mx-auto max-w-7xl scroll-mt-28 px-6 py-16">
         <div className="grid items-start gap-10 md:grid-cols-2 lg:gap-14">
@@ -132,7 +153,7 @@ export default function Services() {
               <div
                 className={`group relative flex h-full flex-col gap-6 overflow-hidden rounded-2xl p-7 transition-transform duration-300 sm:p-8 ${
                   tier.highlighted
-                    ? 'border-2 border-ink bg-ink/5 shadow-[0_30px_80px_-30px_rgba(16,42,36,0.25)] md:-translate-y-6 md:scale-[1.03]'
+                    ? 'border-2 border-ink bg-yellow/20 shadow-[0_30px_80px_-30px_rgba(16,42,36,0.2)] md:-translate-y-6 md:scale-[1.03]'
                     : 'card hover:-translate-y-1'
                 }`}
               >

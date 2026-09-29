@@ -105,7 +105,7 @@ export default function Resume() {
             <Reveal key={pkg.name}>
               <div
                 className={`relative flex h-full flex-col gap-6 rounded-2xl p-7 ${
-                  pkg.highlighted ? 'border-2 border-ink bg-ink/5' : 'card'
+                  pkg.highlighted ? 'border-2 border-ink bg-yellow/20' : 'card'
                 }`}
               >
                 {pkg.highlighted && (

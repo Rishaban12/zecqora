@@ -4,7 +4,7 @@ export default function PageHero({
   eyebrow,
   children,
   description,
-  titleSize = 'text-5xl sm:text-6xl lg:text-[4.35rem]',
+  titleSize = 'text-4xl sm:text-5xl lg:text-[3.6rem]',
   actions,
   decoration,
   navTheme,
@@ -17,33 +17,42 @@ export default function PageHero({
   decoration?: ReactNode
   navTheme?: 'dark'
 }) {
+  const dark = navTheme === 'dark'
+
   return (
     <section
       data-nav-theme={navTheme}
-      className="relative flex min-h-screen items-center overflow-hidden px-6 pt-32 pb-20"
+      className={`relative overflow-hidden px-6 pt-28 pb-16 ${
+        dark ? 'flex min-h-[72vh] items-end bg-ink pb-20' : ''
+      }`}
     >
       {decoration}
-      <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center text-center">
-        <span
-          className={`text-[11px] font-semibold tracking-[0.18em] uppercase ${
-            navTheme === 'dark' ? 'text-white/70' : 'text-ink-soft'
-          }`}
-        >
-          {eyebrow}
-        </span>
-        <h1
-          className={`hero-title mt-8 max-w-4xl text-balance ${navTheme === 'dark' ? 'text-white' : 'text-ink'} ${titleSize}`}
-        >
-          {children}
-        </h1>
-        <p
-          className={`mt-8 max-w-2xl text-base leading-7 sm:text-lg sm:leading-8 ${
-            navTheme === 'dark' ? 'text-white/70' : 'text-ink-soft'
-          }`}
-        >
-          {description}
-        </p>
-        {actions && <div className="mt-8 flex flex-wrap items-center justify-center gap-4">{actions}</div>}
+      <div className="relative z-10 mx-auto w-full max-w-6xl">
+        <div className="max-w-3xl">
+          <p
+            className={`flex items-center gap-2.5 text-[11px] font-semibold tracking-[0.16em] uppercase ${
+              dark ? 'text-yellow' : 'text-ink'
+            }`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-yellow" />
+            {eyebrow}
+          </p>
+          <h1
+            className={`font-display mt-5 font-semibold tracking-[-0.045em] leading-[1.08] ${titleSize} ${
+              dark ? 'text-white' : 'text-ink'
+            }`}
+          >
+            {children}
+          </h1>
+          <p
+            className={`mt-6 max-w-xl text-base leading-7 sm:text-lg sm:leading-8 ${
+              dark ? 'text-white/75' : 'text-ink-soft'
+            }`}
+          >
+            {description}
+          </p>
+          {actions && <div className="mt-8 flex flex-wrap items-center gap-4">{actions}</div>}
+        </div>
       </div>
     </section>
   )
